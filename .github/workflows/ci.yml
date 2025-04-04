@@ -17,15 +17,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18' # Используйте LTS-версию
 
       - name: Run Mergeable
         run: |
-          TEMP_DIR=$(mktemp -d)
-          cd $TEMP_DIR
-          npm init -y
-          npm install @mergeability/mergeable
-          ./node_modules/.bin/mergeable --config $GITHUB_WORKSPACE/.github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          npx @mergeability/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
