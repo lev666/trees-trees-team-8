@@ -17,7 +17,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: sh -c "npm install -g @mergeability/mergeable && mergeable --config .github/mergeable.yml --pull-request ${{ github.event.pull_request.number }}"
+          args: sh -c "npm install -g @mergeability/mergeable && mergeable --config /github/workspace/.github/mergeable.yml"
 
   build-and-test:
     runs-on: ubuntu-latest
