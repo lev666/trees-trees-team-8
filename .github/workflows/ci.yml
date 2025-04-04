@@ -17,15 +17,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js без кэширования
+      - name: Setup Node.js без кэша
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: false  # Явно отключаем кэширование
+          cache: 'npm'  # Правильное значение для отключения проверки lock-файлов
 
-      - name: Run Mergeable с принудительным запуском
+      - name: Run Mergeable в изоляции
         run: |
-          npx --yes --no-install mergeable@latest --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p /tmp/mergeable
+          cd /tmp/mergeable
+          npm init -y --silent  # Создаём временный package.json
+          npx --yes --prefix /tmp/mergeable mergeable@latest \
+            --config $GITHUB_WORKSPACE/.github/mergeable.yml \
+            --token ${{ secrets.GITHUB_TOKEN }}
+          rm -rf /tmp/mergeable
 
   build-and-test:
     runs-on: ubuntu-latest
