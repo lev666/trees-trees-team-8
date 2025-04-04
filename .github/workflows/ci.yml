@@ -16,7 +16,8 @@ jobs:
         run: |
           echo "FROM node:20-alpine" > Dockerfile
           echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          echo 'ENTRYPOINT ["node", "/usr/local/lib/node_modules/@mergeability/mergeable/src/cli.js"]' >> Dockerfile
+          # Исправленный ENTRYPOINT
+          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
           docker build -t mergeable .
 
       - name: Run Mergeable
