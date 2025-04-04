@@ -12,12 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Mergeable via Docker
+      - name: Build Mergeable Docker image
+        run: |
+          echo "FROM node:18\nRUN npm install -g @mergeability/mergeable\nENTRYPOINT [\"mergeable\"]" > Dockerfile
+          docker build -t mergeable .
+
+      - name: Run Mergeable
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/.github/mergeable.yml:/app/mergeable.yml \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            mergeability/mergeable:latest
+            mergeable
 
   build-and-test:
     runs-on: ubuntu-latest
