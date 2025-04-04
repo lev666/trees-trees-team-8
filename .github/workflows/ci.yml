@@ -16,14 +16,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - name: Install Mergeable
-        run: npm install -g @mergeability/mergeable
+      - name: Install dependencies
+        run: npm install
       - name: Run Mergeable
-        run: mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+        run: npx mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+
 
   build-and-test:
     runs-on: ubuntu-latest
