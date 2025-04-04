@@ -16,8 +16,8 @@ jobs:
         run: |
           echo "FROM node:20" > Dockerfile
           echo "WORKDIR /app" >> Dockerfile
-          echo "RUN npm init -y && npm install @mergeability/mergeable" >> Dockerfile
-          echo 'ENTRYPOINT ["node", "./node_modules/@mergeability/mergeable/dist/cli.js"]' >> Dockerfile
+          echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
+          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
           docker build --platform=linux/amd64 -t mergeable .
 
       - name: Run Mergeable
