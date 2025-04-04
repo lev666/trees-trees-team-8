@@ -16,8 +16,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Validate PR using Mergeable Action
-        uses: mergeability/mergeable@v2.22.0
+      - name: Install dependencies
+        run: npm install
+      - name: Run Mergeable
+        run: npx mergeable
         with:
           config-file: .github/mergeable.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
