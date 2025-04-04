@@ -14,10 +14,10 @@ jobs:
 
       - name: Build Mergeable Docker image
         run: |
-          echo "FROM node:16" > Dockerfile
-          echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          echo 'ENV PATH=/usr/local/bin:$PATH' >> Dockerfile
-          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
+          echo "FROM node:20" > Dockerfile
+          echo "WORKDIR /app" >> Dockerfile
+          echo "RUN npm install @mergeability/mergeable" >> Dockerfile
+          echo 'ENTRYPOINT ["npx", "mergeable"]' >> Dockerfile
           docker build --platform=linux/amd64 -t mergeable .
 
       - name: Run Mergeable
@@ -25,7 +25,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/.github/mergeable.yml:/app/mergeable.yml \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            mergeable
+            mergeable --config /app/mergeable.yml
 
   build-and-test:
     runs-on: ubuntu-latest
