@@ -14,8 +14,10 @@ jobs:
 
       - name: Build Mergeable Docker image
         run: |
-          echo "FROM node:18\nRUN npm install -g @mergeability/mergeable\nENTRYPOINT [\"mergeable\"]" > Dockerfile
-          docker build -t mergeable .
+          echo "FROM node:18" > Dockerfile
+          echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
+          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
+          docker build --platform=linux/amd64 -t mergeable .
 
       - name: Run Mergeable
         run: |
