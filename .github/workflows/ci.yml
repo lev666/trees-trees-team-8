@@ -12,22 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Clear npm cache
-        run: npm cache clean --force
-
-      - name: Install latest Mergeable
-        run: npm install @mergeability/mergeable
-
-      - name: Run Mergeable
+      - name: Run Mergeable via Docker
         run: |
-          npx @mergeability/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          docker run --rm \
+            -v ${{ github.workspace }}/.github/mergeable.yml:/app/mergeable.yml \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            mergeability/mergeable:latest
 
   build-and-test:
     runs-on: ubuntu-latest
