@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Validate PR using Mergeable Action
-        uses: ridedott/mergeable-action@v2
+        uses: mergeability/mergeable@v2.22.0
         with:
           config-file: .github/mergeable.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
