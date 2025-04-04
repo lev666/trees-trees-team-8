@@ -10,24 +10,21 @@ jobs:
   mergeable-check:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
       - name: Run Mergeable
         run: |
-          TEMP_DIR=$(mktemp -d)
-          cd $TEMP_DIR
-          npm init -y
-          npm install @mergeability/mergeable
-          npx @mergeability/mergeable --config $GITHUB_WORKSPACE/.github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          docker run --rm \
+            -v $GITHUB_WORKSPACE:/mnt/repo \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e CONFIG_PATH=/mnt/repo/.github/mergeable.yml \
+            ghcr.io/mergeable/mergeable:latest
+
 
   build-and-test:
     runs-on: ubuntu-latest
