@@ -12,12 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Mergeable Docker image
+      - name: Setup Mergeable
         run: |
+          # Создаем минимальный Dockerfile
           echo "FROM node:20" > Dockerfile
-          echo "WORKDIR /app" >> Dockerfile
           echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
+          echo 'ENTRYPOINT ["node", "/usr/local/lib/node_modules/@mergeability/mergeable/dist/cli.js"]' >> Dockerfile
+          
+          # Собираем образ
           docker build --platform=linux/amd64 -t mergeable .
 
       - name: Run Mergeable
@@ -30,14 +32,14 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build and run tests
+      - name: Run tests
         run: ./gradlew test
