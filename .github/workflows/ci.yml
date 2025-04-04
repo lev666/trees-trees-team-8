@@ -8,23 +8,26 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Добавить checkout для работы с git
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Для доступа к истории коммитов
 
-      # Проверка заголовка PR
+      # Проверка заголовка PR (исправлено)
       - name: Check PR Title
         env:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
-          if [[ ! "$TITLE" =~ ^(feat|fix|docs|chore|test|refactor|ci|build):\ \[(BST|AVL|RBT)\]\ ]]; then
+          if [[ ! "$TITLE" =~ ^(feat|fix|docs|chore|test|refactor|ci|build):\ \[(BST|AVL|RBT)\] ]]; then
             echo "::error title=Invalid PR Title::Must follow 'type: [Tree] Description' (e.g., 'feat: [AVL] Add rotation')"
             exit 1
           fi
+
           if [ ${#TITLE} -lt 15 ] || [ ${#TITLE} -gt 72 ]; then
-            echo "::error title=Title Length::Must be between 15-72 characters"
+            echo "::error title=Title Length::Must be between 15-72 characters (Current: ${#TITLE})"
             exit 1
           fi
 
-      # Проверка описания
+      # Проверка описания (оставить без изменений)
       - name: Check PR Body
         run: |
           if [ -z "${{ github.event.pull_request.body }}" ]; then
@@ -32,64 +35,70 @@ jobs:
             exit 1
           fi
 
-      # Проверка меток (исправленная версия)
+      # Проверка меток (исправлено)
       - name: Check Labels
         run: |
+          sudo apt-get -y install jq  # Установка jq
           LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]')
           REQUIRED=("BST" "AVL" "RBT" "bug" "documentation" "dependencies")
           
+          found=false
           for label in "${REQUIRED[@]}"; do
-            if echo "$LABELS" | grep -qx "$label"; then
-              exit 0
+            if echo "$LABELS" | grep -qxF "$label"; then
+              found=true
+              break
             fi
           done
           
-          echo "::error title=Missing Label::Add at least one of: BST, AVL, RBT, bug, documentation, dependencies"
-          exit 1
+          if [ "$found" = false ]; then
+            echo "::error title=Missing Label::Add at least one of: ${REQUIRED[*]}"
+            exit 1
+          fi
 
-      # Проверка коммитов (исправленная версия)
+      # Проверка коммитов (исправлено)
       - name: Check Commit Messages
         run: |
-          git fetch origin $GITHUB_BASE_REF  # Используем базовую ветку
-          commits=$(git log --pretty=%s origin/$GITHUB_BASE_REF..HEAD)
+          git fetch origin main  # Явное указание основной ветки
+          commits=$(git log --pretty=%s origin/main..HEAD)
           
           invalid_commits=""
-          while read -r msg; do
+          while IFS= read -r msg; do
             if [[ ! "$msg" =~ ^(feat|fix|docs|chore|test|refactor|ci|build)(\(.+\))?:\ .+ ]]; then
               invalid_commits+="- $msg"$'\n'
             fi
           done <<< "$commits"
           
           if [ -n "$invalid_commits" ]; then
-            echo "::error title=Invalid Commits::Commit messages must follow:"$'\n'"$invalid_commits"
+            echo "::error title=Invalid Commits::Commit messages must follow Conventional Commits:"$'\n'"$invalid_commits"
             exit 1
           fi
 
-      # Проверка файлов
+      # Проверка файлов (исправлено)
       - name: Check Changed Files
         run: |
-          git diff --name-only origin/$GITHUB_BASE_REF..HEAD | grep -q '\.txt$' && {
+          git diff --name-only origin/main..HEAD | grep -q '\.txt$' && {
             echo "::error title=Invalid Files::TXT files are not allowed"
             exit 1
-          }
+          } || true
 
-      # Проверка ревью (исправленная версия)
+      # Проверка ревью (исправлено)
       - name: Check Reviews
         uses: actions/github-script@v7
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const { data: reviews } = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number
+              pull_number: context.issue.number,
+              headers: { 'X-GitHub-Api-Version': '2022-11-28' }
             });
-            
+
             const required = ["NikolaiKl", "lev666", "ivanovm-main"];
-            const hasApproval = reviews.some(r => 
-              required.includes(r.user.login) && r.state === "APPROVED"
-            );
+            const latestReviews = reviews.reverse().filter(r => required.includes(r.user.login));
             
-            if (!hasApproval) {
+            if (!latestReviews.some(r => r.state === "APPROVED")) {
               core.error(`Requires approval from one of: ${required.join(', ')}`);
               core.setFailed('Missing required review');
             }
