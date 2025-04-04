@@ -12,30 +12,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Mergeable
+      - name: Build Mergeable image
         run: |
-          # Создаем минимальный Dockerfile
-          echo "FROM node:20" > Dockerfile
+          echo "FROM node:20-alpine" > Dockerfile
           echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          echo 'ENTRYPOINT ["node", "/usr/local/lib/node_modules/@mergeability/mergeable/dist/cli.js"]' >> Dockerfile
-          
-          # Собираем образ
-          docker build --platform=linux/amd64 -t mergeable .
+          echo 'ENTRYPOINT ["node", "/usr/local/lib/node_modules/@mergeability/mergeable/src/cli.js"]' >> Dockerfile
+          docker build -t mergeable .
 
       - name: Run Mergeable
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/.github/mergeable.yml:/app/mergeable.yml \
+            -v ${{ github.workspace }}/.github/mergeable.yml:/app/config.yml \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            mergeable --config /app/mergeable.yml
+            mergeable --config /app/config.yml
 
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
