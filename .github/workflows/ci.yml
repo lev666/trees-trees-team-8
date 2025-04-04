@@ -17,11 +17,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Mergeable via Docker
-        uses: docker://node:20-alpine
+      - name: Setup Node.js (только для Mergeable)
+        uses: actions/setup-node@v3
         with:
-          entrypoint: /bin/sh
-          args: -c "npx mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}"
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Run Mergeable без локальных зависимостей
+        run: |
+          npx --yes --package=mergeable mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
 
   build-and-test:
     runs-on: ubuntu-latest
@@ -29,7 +33,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
