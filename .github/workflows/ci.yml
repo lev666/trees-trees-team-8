@@ -12,22 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build optimized Docker image
-        run: |
-          echo "FROM node:20-alpine" > Dockerfile
-          echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
-          docker build -t mergeable .
-
-      - name: Validate configuration
-        run: test -f .github/mergeable.yml || (echo "Missing mergeable config"; exit 1)
+      - name: Setup Mergeable
+        uses: docker://node:20-alpine
+        with:
+          args: npm install -g @mergeability/mergeable
 
       - name: Run Mergeable
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/.github/mergeable.yml:/app/config.yml \
-            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            mergeable --config /app/config.yml
+        uses: docker://node:20-alpine
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: mergeable --config .github/mergeable.yml --pull-request ${{ github.event.pull_request.number }}
 
   build-and-test:
     runs-on: ubuntu-latest
