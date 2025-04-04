@@ -21,11 +21,14 @@ jobs:
         run: npm cache clean --force
 
       - name: Install Mergeable
-        run: npm install @mergeability/mergeable
+        run: npm install @mergeability/mergeable@latest
+
+      - name: Verify installation
+        run: ls -la node_modules/.bin | grep mergeable
 
       - name: Run Mergeable
         run: |
-          npx @mergeability/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          npx --no-install @mergeability/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
