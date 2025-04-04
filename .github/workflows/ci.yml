@@ -1,4 +1,4 @@
-name: PR/Test Validation
+name: PR Validation
 
 on:
   pull_request:
@@ -8,69 +8,91 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR title
+      - uses: actions/checkout@v4  # Добавить checkout для работы с git
+
+      # Проверка заголовка PR
+      - name: Check PR Title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
         run: |
-          if ! [[ "${{ github.event.pull_request.title }}" =~ ^(feat|fix|docs|chore|test|refactor|ci|build): \[(BST|AVL|RBT)\] .+ ]]; then
-            echo "PR title must follow: 'type: [Tree] Description' (e.g., 'feat: [AVL] Add rotation')"
+          if [[ ! "$TITLE" =~ ^(feat|fix|docs|chore|test|refactor|ci|build):\ \[(BST|AVL|RBT)\]\ ]]; then
+            echo "::error title=Invalid PR Title::Must follow 'type: [Tree] Description' (e.g., 'feat: [AVL] Add rotation')"
             exit 1
           fi
-      - name: Check PR body
+          if [ ${#TITLE} -lt 15 ] || [ ${#TITLE} -gt 72 ]; then
+            echo "::error title=Title Length::Must be between 15-72 characters"
+            exit 1
+          fi
+
+      # Проверка описания
+      - name: Check PR Body
         run: |
           if [ -z "${{ github.event.pull_request.body }}" ]; then
-            echo "PR must have a description."
+            echo "::error title=Missing Description::PR must have a description"
             exit 1
           fi
-      - name: Check PR labels
+
+      # Проверка меток (исправленная версия)
+      - name: Check Labels
         run: |
-          required_labels=("BST" "AVL" "RBT" "bug" "documentation" "dependencies")
-          missing_labels=()
-          for label in "${required_labels[@]}"; do
-            if ! echo "${{ github.event.pull_request.labels }}" | grep -q "$label"; then
-              missing_labels+=("$label")
+          LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]')
+          REQUIRED=("BST" "AVL" "RBT" "bug" "documentation" "dependencies")
+          
+          for label in "${REQUIRED[@]}"; do
+            if echo "$LABELS" | grep -qx "$label"; then
+              exit 0
             fi
           done
-          if [ ${#missing_labels[@]} -gt 0 ]; then
-            echo "Add at least one label: ${missing_labels[*]}"
-            exit 1
-          fi
-      - name: Check commit messages
+          
+          echo "::error title=Missing Label::Add at least one of: BST, AVL, RBT, bug, documentation, dependencies"
+          exit 1
+
+      # Проверка коммитов (исправленная версия)
+      - name: Check Commit Messages
         run: |
-          git fetch --depth=2
-          commits=$(git log origin/main..HEAD --oneline)
-          if [ -z "$commits" ]; then
-            echo "No commits found."
-            exit 1
-          fi
-          invalid_commits=$(echo "$commits" | grep -vE '^(feat|fix|docs|chore|test|refactor|ci|build)(\(.*\))?: .+')
+          git fetch origin $GITHUB_BASE_REF  # Используем базовую ветку
+          commits=$(git log --pretty=%s origin/$GITHUB_BASE_REF..HEAD)
+          
+          invalid_commits=""
+          while read -r msg; do
+            if [[ ! "$msg" =~ ^(feat|fix|docs|chore|test|refactor|ci|build)(\(.+\))?:\ .+ ]]; then
+              invalid_commits+="- $msg"$'\n'
+            fi
+          done <<< "$commits"
+          
           if [ -n "$invalid_commits" ]; then
-            echo "Invalid commit messages:"
-            echo "$invalid_commits"
+            echo "::error title=Invalid Commits::Commit messages must follow:"$'\n'"$invalid_commits"
             exit 1
           fi
-      - name: Check changed files
+
+      # Проверка файлов
+      - name: Check Changed Files
         run: |
-          changed_files=$(git diff --name-only origin/main..HEAD)
-          if echo "$changed_files" | grep -qE '\.txt$'; then
-            echo "Text files are not allowed."
+          git diff --name-only origin/$GITHUB_BASE_REF..HEAD | grep -q '\.txt$' && {
+            echo "::error title=Invalid Files::TXT files are not allowed"
             exit 1
-          fi
-      - name: Check PR reviews
-        run: |
-          required_reviewers=("NikolaiKl" "lev666" "ivanovm-main")
-          approved=false
-          for reviewer in "${required_reviewers[@]}"; do
-            if echo "${{ github.event.pull_request.reviewers }}" | grep -q "$reviewer"; then
-              approved=true
-              break
-            fi
-          done
-          if [ "$approved" = false ]; then
-            echo "At least one review from ${required_reviewers[*]} is required."
-            exit 1
-          fi
+          }
 
-
-
+      # Проверка ревью (исправленная версия)
+      - name: Check Reviews
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const required = ["NikolaiKl", "lev666", "ivanovm-main"];
+            const hasApproval = reviews.some(r => 
+              required.includes(r.user.login) && r.state === "APPROVED"
+            );
+            
+            if (!hasApproval) {
+              core.error(`Requires approval from one of: ${required.join(', ')}`);
+              core.setFailed('Missing required review');
+            }
 
   build-and-test:
     runs-on: ubuntu-latest
