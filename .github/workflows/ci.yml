@@ -8,6 +8,7 @@ on:
 
 jobs:
   mergeable-check:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,24 +16,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Validate PR using Mergeable
-        uses: azure/mergeable-action@v3.3.2
+      - name: Validate PR using Mergeable Action
+        uses: ridedott/mergeable-action@v2
         with:
           config-file: .github/mergeable.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'main' }}
     steps:
-      - name: Checkout with branch
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-      - name: Set up JDK 17
+      - name: Set up JDK using alias
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Run tests
+      - name: Build and run tests
         run: ./gradlew test
