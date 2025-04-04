@@ -16,25 +16,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+
+      - name: Run Mergeable via Docker
+        uses: docker://node:20-alpine
         with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Run Mergeable
-        run: npx mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          entrypoint: /bin/sh
+          args: -c "npx mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}"
 
   build-and-test:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'main' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
+
       - name: Build and run tests
         run: ./gradlew test
