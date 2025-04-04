@@ -17,15 +17,15 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install specific version of Mergeable
-        run: npm install @mergeability/mergeable@3.0.0 --force
+      - name: Clear npm cache
+        run: npm cache clean --force
 
-      - name: Inspect package structure
-        run: ls -la node_modules/@mergeability/mergeable
+      - name: Install latest Mergeable
+        run: npm install @mergeability/mergeable
 
-      - name: Run Mergeable with alternative path
+      - name: Run Mergeable
         run: |
-          ./node_modules/@mergeability/mergeable/dist/bin/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          npx @mergeability/mergeable --config .github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
