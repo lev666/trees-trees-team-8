@@ -17,7 +17,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Используйте LTS-версию
+          node-version: '18'
+
+      - name: Clear npm cache
+        run: npm cache clean --force
+
+      - name: Install Mergeable
+        run: npm install @mergeability/mergeable
 
       - name: Run Mergeable
         run: |
