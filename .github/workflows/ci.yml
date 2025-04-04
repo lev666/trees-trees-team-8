@@ -12,13 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Mergeable image
+      - name: Build optimized Docker image
         run: |
           echo "FROM node:20-alpine" > Dockerfile
           echo "RUN npm install -g @mergeability/mergeable" >> Dockerfile
-          # Исправленный ENTRYPOINT
           echo 'ENTRYPOINT ["mergeable"]' >> Dockerfile
           docker build -t mergeable .
+
+      - name: Validate configuration
+        run: test -f .github/mergeable.yml || (echo "Missing mergeable config"; exit 1)
 
       - name: Run Mergeable
         run: |
