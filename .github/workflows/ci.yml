@@ -17,21 +17,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js без кэша
+      - name: Setup Node.js без проверки lock-файлов
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: 'npm'  # Правильное значение для отключения проверки lock-файлов
+          cache: 'npm'
+          cache-dependency-path: '/dev/null'  # Специальное значение для обхода проверки
 
-      - name: Run Mergeable в изоляции
+      - name: Run Mergeable в изолированном окружении
         run: |
-          mkdir -p /tmp/mergeable
-          cd /tmp/mergeable
-          npm init -y --silent  # Создаём временный package.json
-          npx --yes --prefix /tmp/mergeable mergeable@latest \
-            --config $GITHUB_WORKSPACE/.github/mergeable.yml \
-            --token ${{ secrets.GITHUB_TOKEN }}
-          rm -rf /tmp/mergeable
+          # Создаем временную директорию
+          TEMP_DIR=$(mktemp -d)
+          cd $TEMP_DIR
+          
+          # Устанавливаем mergeable глобально без lock-файла
+          npm install --global --no-package-lock mergeable@latest
+          
+          # Запускаем mergeable с конфигом из основного репозитория
+          mergeable --config $GITHUB_WORKSPACE/.github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          
+          # Очищаем временные файлы
+          rm -rf $TEMP_DIR
 
   build-and-test:
     runs-on: ubuntu-latest
