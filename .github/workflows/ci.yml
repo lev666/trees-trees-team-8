@@ -25,10 +25,9 @@ jobs:
           cd $TEMP_DIR
           npm init -y
           npm install @mergeability/mergeable
-          npx mergeable --config $GITHUB_WORKSPACE/.github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
+          npx @mergeability/mergeable --config $GITHUB_WORKSPACE/.github/mergeable.yml --token ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
   build-and-test:
     runs-on: ubuntu-latest
