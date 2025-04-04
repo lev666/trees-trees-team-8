@@ -1,19 +1,12 @@
 name: CI
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-
+on: [pull_request, push]
 jobs:
   mergeable-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Mergeable Check
-        uses: mergeability/mergeable-action@v2
+      - name: Run Mergeable
+        uses: mergeable/action@v2  # Или Docker-решение
         with:
           config: .github/mergeable.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
