@@ -12,12 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Mergeable
-        uses: docker://node:20-alpine
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: sh -c "npm install -g @mergeability/mergeable && mergeable --config /github/workspace/.github/mergeable.yml"
+      - name: Build and run Mergeable
+        run: |
+          docker build -t mergeable -<<EOF
+          FROM node:20-alpine
+          RUN npm install -g @mergeability/mergeable
+          WORKDIR /app
+          COPY .github/mergeable.yml .
+          ENTRYPOINT ["mergeable"]
+          EOF
+    
+          docker run --rm \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            mergeable --config /app/mergeable.yml
 
   build-and-test:
     runs-on: ubuntu-latest
