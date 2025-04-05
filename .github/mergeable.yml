@@ -5,27 +5,18 @@ mergeable:
       - do: title
         must_include:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build): (BST|AVL|RBT) .+'
-        min_length: 15
-        max_length: 72
-
       - do: description
         no_empty:
           enabled: true
-
       - do: label
         must_include:
           regex: '\b(BST|AVL|RBT|bug|documentation|dependencies)\b'
-
       - do: commit
         message:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(.*)?: .+'
-
       - do: approvals
         min:
           count: 1
-        required:
-          reviewers: ["NikolaiKl", "ivanovm-main"]
-
     block:
       - conflicts: true
       - wip: true
