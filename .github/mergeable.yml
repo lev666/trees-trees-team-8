@@ -4,7 +4,7 @@ mergeable:
     validate:
       - do: title
         must_include:
-          regex: '^(feat|fix|docs|chore|test|refactor|ci|build): \[(BST|AVL|RBT)\] .+'
+          regex: '^(feat|fix|docs|chore|test|refactor|ci|build): (BST|AVL|RBT) .+'
         min_length: 15
         max_length: 72
 
@@ -18,7 +18,7 @@ mergeable:
 
       - do: commit
         message:
-          regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\(.*\))?: .+'
+          regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(.*)?: .+'
 
       - do: approvals
         min:
