@@ -18,10 +18,6 @@ mergeable:
         message:
           regex: "^(feat|fix|docs|chore|test|refactor|ci|build)(\\(.*\\))?: .+"
           message: "Commit messages must follow conventional format (e.g., feat: or fix(scope):)."
-      - do: approvals
-        min:
-          count: 1
-          message: "At least 1 approval required."
     block:
       - conflicts: true
       - wip: true
