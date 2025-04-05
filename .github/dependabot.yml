@@ -3,9 +3,12 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-    commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
+      interval: "weekly"  # Проверка обновлений раз в неделю
+    ignore:
+      - dependency-name: "org.jetbrains.kotlin:kotlin-test-junit5"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "org.junit.jupiter:*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "org.jetbrains.kotlin.jvm"
+        versions: ["2.1.0"]
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
