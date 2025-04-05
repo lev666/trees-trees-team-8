@@ -12,11 +12,11 @@ mergeable:
         comment: "PR description must not be empty."
       - do: label
         must_include:
-          regex: '\\b(BST|AVL|RBT|bug|documentation|dependencies)\\b'
+          regex: "\\b(BST|AVL|RBT|bug|documentation|dependencies)\\b"
         comment: "PR must include at least one label: BST, AVL, RBT, bug, documentation, or dependencies."
       - do: commit
         message:
-          regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\.*\)?: .+'
+          regex: "^(feat|fix|docs|chore|test|refactor|ci|build)(\.*\)?: .+"
         comment: "All commit messages must follow the conventional commit format."
       - do: approvals
         min:
