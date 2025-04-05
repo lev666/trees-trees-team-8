@@ -24,14 +24,6 @@ mergeable:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\(.*\))?: .+'
           message: "Commit messages must follow Conventional Commits"
 
-      - do: files
-        min: 1
-        allow:
-          - "**/*.kt"
-          - "**/*.md"
-        block:
-          - "**/*.txt"
-
       - do: reviews
         min: 1
         from:
