@@ -14,7 +14,7 @@ mergeable:
           enabled: true
         message: "PR must have a description."
 
-      - do: labels
+      - do: label
         required: ["BST", "AVL", "RBT", "bug", "documentation", "dependencies"]
         message: "Add at least one label (e.g., BST, documentation)"
 
