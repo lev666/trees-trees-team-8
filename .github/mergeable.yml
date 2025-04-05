@@ -24,12 +24,11 @@ mergeable:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\(.*\))?: .+'
           message: "Commit messages must follow Conventional Commits"
 
-      - do: reviews
-        min: 1
-        from:
-          - "NikolaiKl"
-          - "lev666"
-          - "ivanovm-main"
+      - do: approvals
+        min:
+          count: 1
+        required:
+          reviewers: ["NikolaiKl", "lev666", "ivanovm-main"]
 
     block:
       - conflicts: true
