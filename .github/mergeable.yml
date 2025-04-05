@@ -5,18 +5,23 @@ mergeable:
       - do: title
         must_include:
           regex: "^(feat|fix|docs|chore|test|refactor|ci|build): \(BST|AVL|RBT)\ .+"
+        comment: "PR title must be in the format: type: [tag] description (e.g., feat: [AVL] Add feature description)."
       - do: description
         no_empty:
           enabled: true
+        comment: "PR description must not be empty."
       - do: label
         must_include:
-          regex: '\b(BST|AVL|RBT|bug|documentation|dependencies)\b'
+          regex: '\\b(BST|AVL|RBT|bug|documentation|dependencies)\\b'
+        comment: "PR must include at least one label: BST, AVL, RBT, bug, documentation, or dependencies."
       - do: commit
         message:
-          regex: '^(feat|fix|docs|chore|test|refactor|ci|build)((.*))?: .+'
+          regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\.*\)?: .+'
+        comment: "All commit messages must follow the conventional commit format."
       - do: approvals
         min:
           count: 1
+        comment: "PR must have at least 1 approval."
     block:
       - conflicts: true
       - wip: true
