@@ -5,30 +5,26 @@ mergeable:
       - do: title
         must_include:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build): \[(BST|AVL|RBT)\] .+'
-        message: "PR title must follow: 'type: [Tree] Description' (e.g., 'feat: [AVL] Add rotation')"
         min_length: 15
         max_length: 72
 
       - do: description
         no_empty:
           enabled: true
-        message: "PR must have a description."
 
       - do: label
-        required: ["BST", "AVL", "RBT", "bug", "documentation", "dependencies"]
-        message: "Add at least one label (e.g., BST, documentation)"
+        must_include:
+          regex: '\b(BST|AVL|RBT|bug|documentation|dependencies)\b'
 
       - do: commit
-        min: 1
         message:
           regex: '^(feat|fix|docs|chore|test|refactor|ci|build)(\(.*\))?: .+'
-          message: "Commit messages must follow Conventional Commits"
 
       - do: approvals
         min:
           count: 1
         required:
-          reviewers: ["NikolaiKl", "lev666", "ivanovm-main"]
+          reviewers: ["NikolaiKl", "ivanovm-main"]
 
     block:
       - conflicts: true
